@@ -1,3 +1,1 @@
-# EKS Grafana and Prometheus
-
-![alt text](./Architecture.png)
+# EKS OPENSEARCH JENKINS

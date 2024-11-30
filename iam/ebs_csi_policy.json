@@ -1,0 +1,33 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ec2:CreateVolume",
+          "ec2:AttachVolume",
+          "ec2:DetachVolume",
+          "ec2:DeleteVolume",
+          "ec2:CreateSnapshot",
+          "ec2:DeleteSnapshot",
+          "ec2:DescribeVolumes",
+          "ec2:DescribeSnapshots",
+          "ec2:DescribeInstances",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeVolumeStatus",
+          "ec2:DescribeVolumeAttribute",
+          "ec2:DescribeSnapshotAttribute",
+          "ec2:DescribeInstanceAttribute",
+          "ec2:DescribeInstanceCreditSpecifications",
+          "ec2:DescribeVolumeTypes",
+          "ec2:DescribeVpcAttribute",
+          "ec2:DescribeVpcEndpoints",
+          "ec2:DescribeVpcs",
+          "ec2:ModifyVolume",
+          "ec2:ModifyVolumeAttribute",
+          "ec2:ModifyInstanceAttribute"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }

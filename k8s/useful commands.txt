@@ -1,0 +1,68 @@
+
+Apply
+    -> namespace.yml
+    
+    -> helm repo add https://aws.github.io/eks-charts
+    -> helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    -> helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver/
+    -> helm repo add grafana https://grafana.github.io/helm-charts
+    -> helm repo add autoscaler https://kubernetes.github.io/autoscaler
+    -> helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+    -> helm install fluent-bit fluent/fluent-bit
+    -> helm repo add elastic https://helm.elastic.co
+    -> helm install aws-efs-csi-driver aws-efs-csi-driver/aws-efs-csi-driver --namespace kube-system
+    -> helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system
+    -> helm repo update
+
+FARGATE
+    -> deployments.yaml
+    -> service-account.yaml
+    -> services.yaml
+    -> ingress.yaml
+
+LOAD BALANCER
+    -> helm install aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=thunder --set serviceAccount.create=false --set region=us-east-1 --set vpcId=vpc-0ed97fde7bf6b8858 --set serviceAccount.name=aws-load-balancer-controller -n kube-system
+
+AUTOSCALER
+    -> helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=thunder --set rbac.serviceAccount.name=cluster-autoscaler-controller --set rbac.serviceAccount.create=false --set awsRegion=us-east-1 -n kube-system
+
+FLUENTBIT
+    -> helm install fluent-bit fluent/fluent-bit --values fluent-bits.yaml --set serviceAccount.name=fluent-bit-controller -n logging
+    
+APPLICATION PERFORMANCE MONITORING
+        NEW RELIC
+        -> KSM_IMAGE_VERSION="v2.10.0" && helm repo add newrelic https://helm-charts.newrelic.com && helm repo update && kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newrelic/nri-bundle --set global.licenseKey=eu01xx1cbd15f6e4e7dcf2148917dad5FFFFNRAL --set global.cluster=Thunder --namespace=newrelic --set newrelic-infrastructure.privileged=true --set global.lowDataMode=true --set kube-state-metrics.image.tag=${KSM_IMAGE_VERSION} --set kube-state-metrics.enabled=true --set kubeEvents.enabled=true --set newrelic-prometheus-agent.enabled=true --set newrelic-prometheus-agent.lowDataMode=true --set newrelic-prometheus-agent.config.kubernetes.integrations_filter.enabled=false --set logging.enabled=true --set newrelic-logging.lowDataMode=true 
+        -> helm repo add newrelic https://helm-charts.newrelic.com && helm repo update && kubectl create namespace newrelic
+        -> helm upgrade --install newrelic-bundle newrelic/nri-bundle -n newrelic --values values.yaml
+
+LOGGING
+    ELK
+        -> helm show values elastic/filebeat > filebeat-values.yml
+        -> curl https://raw.githubusercontent.com/elastic/helm-charts/main/elasticsearch/values.yaml > elastic-values.yaml
+        -> helm show values elastic/filebeat > logstash-values.yml
+        -> helm show values elastic/filebeat > kibana-values.yml 
+        
+        -> helm install elasticsearch elastic/elasticsearch -n logging --set replicas=1 --values elk/elastic-values.yaml
+        -> helm install kibana elastic/kibana --values elk/kibana-values.yaml -n logging 
+        -> helm install logstash elastic/logstash --values elk/logstash-values.yaml -n logging
+        -> helm install filebeat elastic/filebeat --values elk/filebeat-values.yaml -n logging
+
+        Credentials
+            -> default username - elastic
+            -> kubectl get secret elasticsearch-master-credentials --namespace=logging -o jsonpath='{.data.password}'
+        
+
+TROUBLESHOOTING
+    To verify if there is connectivity from within the cluster
+        -> kubectl run -it --rm --image=alpine debug --namespace=thunder -- sh
+            -> wget -qO- http://10.0.10.2:80
+    -> kubectl logs <POD_NAME> -n <NAMESPACE>
+    -> kubectl describe <Type>/<POD_NAME> -n <NAMESPACE>
+    -> kubectl get pvc -n <namespace>
+To view subnet ip usage
+ -> aws ec2 describe-network-interfaces --filters Name=subnet-id,Values=subnet-0c774a010fc4bd528
+To expose locally
+    -> kubectl port-forward -n monitoring svc/prometheus-server 9090:80
+    -> kubectl port-forward -n logging pod/kibana-kibana-78c959bd56-c4zf7 5601:5601
+Perform Load Test
+    -> ab -n 1000 -c 10 http://<LOAD_BALANCER_IP>/

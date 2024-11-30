@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: potato-deployment
+  namespace: thunder
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: potato
+  template:
+    metadata:
+      labels:
+        app: potato
+    spec:
+      containers:
+        - name: node-server
+          image: docker.io/alisterxavier153/simple-node-server-80:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+              - containerPort: 80

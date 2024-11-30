@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Terraform init') {
             steps {
-                echo $AWS_ACCESS_KEY_ID
+                echo "$AWS_ACCESS_KEY_ID"
             }
         }
         // stage('Build') {

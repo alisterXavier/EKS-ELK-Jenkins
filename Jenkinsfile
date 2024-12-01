@@ -30,7 +30,13 @@ pipeline {
                 }
             }
         }
-
+        stage('Approval') {
+            steps {
+                script {
+                    input message: 'Proceed with the EKS setup?'
+                }
+            }
+        }
         stage('TERRAFORM INIT & APPLY') {
 
             steps {
@@ -39,16 +45,6 @@ pipeline {
                     sh 'terraform apply --auto-approve'
                     PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
                     VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()
-                }
-            }
-        }
-        stage('Approval') {
-            steps {
-                script {
-                    input message: 'Proceed with the EKS setup?', 
-                        parameters: [
-                            choice(name: 'Proceed with EKS setup?', choices: ['Yes', 'No'])
-                        ]
                 }
             }
         }

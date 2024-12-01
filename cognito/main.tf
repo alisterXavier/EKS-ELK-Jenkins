@@ -45,9 +45,9 @@ resource "aws_cognito_user" "Typer" {
 #     server_side_token_check = false
 #   }
 # }
-resource "aws_cognito_identity_pool_roles_attachment" "identity_authenticated_policy" {
-  identity_pool_id = aws_cognito_identity_pool.identity_pool.id
-  roles = {
-    "authenticated" = var.cognito_auth_role_arn
-  }
-}
+# resource "aws_cognito_identity_pool_roles_attachment" "identity_authenticated_policy" {
+#   identity_pool_id = aws_cognito_identity_pool.identity_pool.id
+#   roles = {
+#     "authenticated" = var.cognito_auth_role_arn
+#   }
+# }

@@ -16,9 +16,9 @@ pipeline {
                     def stsCheck = sh(script: 'aws sts get-caller-identity > /dev/null', returnStatus: true)
 
                     if(stsCheck != 0){
-                        echo "AWS IS NOT CONFIGURED"
+                        echo "Aws is not configured..."
                         
-                        echo "CONFIGURING AWS"
+                        echo "Configuring aws..."
                         sh """
                             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
                             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
@@ -26,7 +26,7 @@ pipeline {
                         """
 
                     }else{
-                        echo "AWS IS CONFIGURED, SKIPPING aws configure"
+                        echo "Aws is configured skipping aws configure..."
                     }
                 }
             }
@@ -35,13 +35,14 @@ pipeline {
         stage ('Terraform state check'){
             steps{
                 script{
+                    echo "Retrieving current state..."
                     sh 'terraform state pull > tfstate.json'
                     def arn = sh(script: "jq -r '.resources[0].instances[0].attributes.arn' tfstate.json", returnStdout: true).trim()
 
                     def stateAccountId = arn.split(':')[4]
 
                     if(stateAccountId != env.AWS_ACC_ID){
-                        echo "DELETING PREVIOUS STATE"
+                        echo "Deleting preivous state..."
                         sh 'rm -rf terraform.tfstate'
                     }
                 }
@@ -51,7 +52,10 @@ pipeline {
         stage('TERRAFORM INIT & APPLY') {
             steps {
                 script {
+                    echo "Initializing terraform..."
                     sh 'terraform init'
+
+                    echo "Applying terraform..."
                     sh 'terraform apply --auto-approve'
                 }
             }

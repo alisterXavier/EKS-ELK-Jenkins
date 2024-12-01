@@ -68,16 +68,16 @@ resource "aws_security_group" "opensearch_sg" {
   }
 }
 
-data "aws_iam_policy_document" "main" {
-  statement {
-    effect = "Allow"
+# data "aws_iam_policy_document" "main" {
+#   statement {
+#     effect = "Allow"
 
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
+#     principals {
+#       type        = "*"
+#       identifiers = ["*"]
+#     }
 
-    actions   = ["es:*"]
-    resources = ["${aws_opensearch_domain.opensearch.arn}/*"]
-  }
-}
+#     actions   = ["es:*"]
+#     resources = ["${aws_opensearch_domain.opensearch.arn}/*"]
+#   }
+# }

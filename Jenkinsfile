@@ -30,13 +30,15 @@ pipeline {
                 }
             }
         }
+
         stage('Approval') {
             steps {
                 script {
-                    input message: 'Proceed with the EKS setup?'
+                    input message: 'Proceed with the Terraform init?'
                 }
             }
         }
+
         stage('TERRAFORM INIT & APPLY') {
 
             steps {
@@ -49,37 +51,45 @@ pipeline {
             }
         }
 
-        // stage('EKS SETUP') {
-        //     steps {
-        //         echo 'UPDATING LOCAL KUBECONFIG'
-        //         sh 'aws eks update-kubeconfig --name=Flaming'
+        stage('Approval') {
+            steps {
+                script {
+                    input message: 'Proceed with the EKS Setup?'
+                }
+            }
+        }
+    
+        stage('EKS SETUP') {
+            steps {
+                echo 'UPDATING LOCAL KUBECONFIG'
+                sh 'aws eks update-kubeconfig --name=Flaming'
 
-        //         echo 'CREATING SERVICE ACCOUNTS'
-        //         sh"envsubst < service-account.yaml | kubectl apply -f -"
+                echo 'CREATING SERVICE ACCOUNTS'
+                sh"envsubst < service-account.yaml | kubectl apply -f -"
 
-        //         echo 'CREATING NAMESPACE'
-        //         sh 'kubectl apply -f k8s/namespace.yaml'
+                echo 'CREATING NAMESPACE'
+                sh 'kubectl apply -f k8s/namespace.yaml'
 
-        //         echo 'CREATING DEPLOYMENTS'
-        //         sh 'kubectl apply -f k8s/deployments.yaml'
+                echo 'CREATING DEPLOYMENTS'
+                sh 'kubectl apply -f k8s/deployments.yaml'
                 
-        //         echo 'CREATING SERVICES'
-        //         sh 'kubectl apply -f k8s/services.yaml'
+                echo 'CREATING SERVICES'
+                sh 'kubectl apply -f k8s/services.yaml'
                 
-        //         echo 'CREATING INGRESS'
-        //         sh 'envsubst < ingress.yaml | kubectl apply -f -'
+                echo 'CREATING INGRESS'
+                sh 'envsubst < ingress.yaml | kubectl apply -f -'
 
-        //         echo 'INSTALLING LOAD BALANCER CONTROLLER'
-        //         sh """
-        //             helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-        //             --set clusterName=thunder \
-        //             --set serviceAccount.create=false \
-        //             --set region=us-east-1 \
-        //             --set vpcId="$VPC_ID" \
-        //             --set serviceAccount.name=aws-load-balancer-controller \
-        //             -n kube-system
-        //         """
-        //     }
-        // }
+                echo 'INSTALLING LOAD BALANCER CONTROLLER'
+                sh """
+                    helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+                    --set clusterName=thunder \
+                    --set serviceAccount.create=false \
+                    --set region=us-east-1 \
+                    --set vpcId="$VPC_ID" \
+                    --set serviceAccount.name=aws-load-balancer-controller \
+                    -n kube-system
+                """
+            }
+        }
     }
 }

@@ -44,6 +44,7 @@ pipeline {
 
             steps {
                 script {
+                    sh 'rm -rf terraform.tfstate'
                     sh 'terraform init -reconfigure'
                     sh 'terraform apply --auto-approve'
                     PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()

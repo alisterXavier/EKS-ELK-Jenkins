@@ -43,7 +43,7 @@ pipeline {
             steps{
                 script{
                     def tfState = sh(script: 'terraform state pull', returnStdout: true).trim()
-                    tfState = sh(script: """echo '${tfState}' | sed ':a;N;\$!ba;s/\\\\n/ /g'""", returnStdout: true).trim()
+                    tfState = sh(script: """echo '${tfState}' | jq 'del(.. | select(. == null))' | sed ':a;N;\$!ba;s/\\\\n/ /g'""", returnStdout: true).trim()
 
                     def arn = sh(script: "echo '${tfState}' | jq -r '.resources[0].instances[0].attributes.arn'", returnStdout: true).trim()
 

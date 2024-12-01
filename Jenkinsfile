@@ -39,12 +39,24 @@ pipeline {
         //         }
         //     }
         // }
+        stage ('Terraform state check'){
+            steps{
+                script{
+                    def tfState = sh(script: 'terraform state pull', returnStdout: true).trim()
+                    def arn = sh(script: "echo '${tfState}' | jq -r '.resources[0].instances[0].attributes.arn'", returnStdout: true).trim()
+                    def stateAccountId = arn.split(':')[4]
 
+                    if(stateAccountId != env.AWS_ACC_ID"){
+                        echo "DELETING PREVIOUS STATE"
+                        sh 'rm -rf terraform.tfstate'
+                    }
+                }
+            }
+        }
         stage('TERRAFORM INIT & APPLY') {
 
             steps {
                 script {
-                    sh 'rm -rf terraform.tfstate'
                     sh 'terraform init -reconfigure'
                     sh 'terraform apply --auto-approve'
                     PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()

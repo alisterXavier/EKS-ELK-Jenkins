@@ -34,7 +34,7 @@ pipeline {
         stage('TERRAFORM INIT & APPLY') {
 
             steps {
-                sh {
+                script {
                     sh 'terraform init'
                     sh 'terraform apply --auto-approve'
                     PUBLIC_SUBNETS = sh(script: 'terraform output -raw Public_Subnets', returnStdout: true).trim()

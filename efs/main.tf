@@ -18,7 +18,7 @@ resource "aws_efs_file_system_policy" "EFS_policy" {
         "Sid" : "AllowRootAccess",
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : "arn:aws:iam::${var.account_id}:role/FluentBitEFSAccessRole"
+          "AWS" : "arn:aws:iam::${var.account_id}:role/FluentBitRole"
         },
         "Action" : [
           "elasticfilesystem:ClientMount",

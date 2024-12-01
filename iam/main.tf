@@ -230,12 +230,12 @@ resource "aws_iam_role_policy_attachment" "cognito_for_opensearch_role_attachmen
 }
 
 # Opensearch Service Linked Role
-resource "aws_iam_service_linked_role" "opensearch_service_linked_role" {
-  tags = {
-    Name = "AmazonOpenSearchServiceRoleThunder"
-  }
-  aws_service_name = "opensearchservice.amazonaws.com"
-}
+# resource "aws_iam_service_linked_role" "opensearch_service_linked_role" {
+#   tags = {
+#     Name = "AmazonOpenSearchServiceRoleThunder"
+#   }
+#   aws_service_name = "opensearchservice.amazonaws.com"
+# }
 
 # FluentBit
 resource "aws_iam_role" "FluentBitRole" {

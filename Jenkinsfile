@@ -13,7 +13,7 @@ pipeline {
         stage('AWS SETUP'){
             steps{
                 script{
-                    def stsCheck = sh(script: 'aws sts get-caller-identity', returnStatus: true)
+                    def stsCheck = sh(script: 'aws sts get-caller-identity > /dev/null', returnStatus: true)
 
                     if(stsCheck != 0){
                         echo "AWS IS NOT CONFIGURED"
@@ -39,6 +39,7 @@ pipeline {
         //         }
         //     }
         // }
+
         stage ('Terraform state check'){
             steps{
                 script{
@@ -54,15 +55,23 @@ pipeline {
                 }
             }
         }
-        stage('TERRAFORM INIT & APPLY') {
 
+        stage('TERRAFORM INIT & APPLY') {
             steps {
                 script {
-                    sh 'terraform init -reconfigure'
+                    sh 'terraform init'
                     sh 'terraform apply --auto-approve'
-                    PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
-                    VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()
                 }
+            }
+        }
+
+        stage('Storing terraform outputs'){
+            steps{
+                echo "Storing public subets id..."
+                PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
+                
+                echo "Storing vpc id..."
+                VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()
             }
         }
 
@@ -73,37 +82,55 @@ pipeline {
                 }
             }
         }
-    
+
+        stage("ADDING HELM REPOS"){
+            steps{
+                echo "Adding AWS EKS Helm repository..."
+                sh "helm repo add eks-charts https://aws.github.io/eks-charts"
+                
+                echo "Adding Kubernetes Cluster Autoscaler Helm repository..."
+                sh "helm repo add autoscaler https://kubernetes.github.io/autoscaler"
+                
+                echo "Updating Helm repository index..."
+                sh "helm repo update"
+            }
+        }
+
         stage('EKS SETUP') {
             steps {
-                echo 'UPDATING LOCAL KUBECONFIG'
-                sh 'aws eks update-kubeconfig --name=Flaming'
+                echo 'Updating local kubeconfig...'
+                sh 'aws eks update-kubeconfig --name=thunder'
 
-                echo 'CREATING SERVICE ACCOUNTS'
-                sh"envsubst < service-account.yaml | kubectl apply -f -"
+                echo 'Creating service accounts...'
+                sh 'envsubst < service-account.yaml | kubectl apply -f -'
 
-                echo 'CREATING NAMESPACE'
+                echo 'Creating namespace...'
                 sh 'kubectl apply -f k8s/namespace.yaml'
 
-                echo 'CREATING DEPLOYMENTS'
+                echo 'Creating deployments...'
                 sh 'kubectl apply -f k8s/deployments.yaml'
-                
-                echo 'CREATING SERVICES'
+
+                echo 'Creating services...'
                 sh 'kubectl apply -f k8s/services.yaml'
-                
-                echo 'CREATING INGRESS'
+
+                echo 'Creating ingress...'
                 sh 'envsubst < ingress.yaml | kubectl apply -f -'
 
-                echo 'INSTALLING LOAD BALANCER CONTROLLER'
+                echo 'Installing load balancer controller...'
                 sh """
                     helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
                     --set clusterName=thunder \
                     --set serviceAccount.create=false \
                     --set region=us-east-1 \
                     --set vpcId="$VPC_ID" \
-                    --set serviceAccount.name=aws-load-balancer-controller \
-                    -n kube-system
-                """
+                    --set serviceAccount.name """
+
+                echo 'Installing auto scaler controller...'
+                sh "helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler \
+                    --set autoDiscovery.clusterName=thunder \
+                    --set rbac.serviceAccount.name=cluster-autoscaler-controller \
+                    --set rbac.serviceAccount.create=false \
+                    --set awsRegion=us-east-1 -n kube-system"
             }
         }
     }

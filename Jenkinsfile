@@ -70,8 +70,17 @@ pipeline {
                         sh "terraform init"
                     }
 
-                    echo "Applying terraform..."
-                    sh 'terraform apply --auto-approve'
+                    def planStatus = sh(script: 'terraform plan -detailed-exitcode', returnStatus: true)
+                    if(planStatus == 2){
+                        echo "Detected new terraform resources. Running 'terraform apply'..."
+                        sh 'terraform apply --auto-approve'
+                    }else if(planStatus == 1){
+                        echo "Error running terraform plan. Exiting..."
+                        error("Terraform plan failed")
+                    }
+                    else{
+                        echo "Terraform resources are up-to-date. Skipping 'terraform apply'..."
+                    }
                 }
             }
         }
@@ -107,7 +116,7 @@ pipeline {
                 sh 'aws eks update-kubeconfig --name=thunder'
 
                 echo 'Creating service accounts...'
-                sh 'envsubst < service-account.yaml | kubectl apply -f -'
+                sh 'envsubst < k8s/service-account.yaml | kubectl apply -f -'
 
                 echo 'Creating namespace...'
                 sh 'kubectl apply -f k8s/namespace.yaml'

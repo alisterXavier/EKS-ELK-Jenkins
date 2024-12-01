@@ -32,14 +32,6 @@ pipeline {
             }
         }
 
-        // stage('Approval for Terraform') {
-        //     steps {
-        //         script {
-        //             input message: 'Proceed with the Terraform?'
-        //         }
-        //     }
-        // }
-
         stage ('Terraform state check'){
             steps{
                 script{
@@ -67,18 +59,12 @@ pipeline {
 
         stage('Storing terraform outputs'){
             steps{
-                echo "Storing public subets id..."
-                PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
-                
-                echo "Storing vpc id..."
-                VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()
-            }
-        }
-
-        stage('Approval for EKS') {
-            steps {
-                script {
-                    input message: 'Proceed with the EKS Setup?'
+                script{
+                    echo "Storing public subets id..."
+                    PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
+                    
+                    echo "Storing vpc id..."
+                    VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
                 }
             }
         }

@@ -10,21 +10,23 @@ pipeline {
 
     stages {
         stage('AWS SETUP'){
-            script{
-                def stsCheck = sh(script: 'aws sts get-caller-identity', returnStatus: true)
-                
-                if(stsCheck != 0){
-                    echo "AWS IS NOT CONFIGURED"
-                    
-                    echo "CONFIGURING AWS"
-                    sh """
-                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                        aws configure set region $AWS_DEFAULT_REGION
-                    """
+            steps{
+                script{
+                    def stsCheck = sh(script: 'aws sts get-caller-identity', returnStatus: true)
 
-                }else{
-                    echo "AWS IS CONFIGURED, SKIPPING aws configure"
+                    if(stsCheck != 0){
+                        echo "AWS IS NOT CONFIGURED"
+                        
+                        echo "CONFIGURING AWS"
+                        sh """
+                            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+                            aws configure set region $AWS_DEFAULT_REGION
+                        """
+
+                    }else{
+                        echo "AWS IS CONFIGURED, SKIPPING aws configure"
+                    }
                 }
             }
         }

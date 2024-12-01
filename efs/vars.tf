@@ -1,5 +1,5 @@
 variable "public_subnet_ids" {
-  type = string
+  type = list(string)
 }
 variable "region" {
   type = string

@@ -10,7 +10,7 @@ pipeline {
 
     stages {
 
-        stage('AWS SETUP'){
+        stage('Aws setup'){
             steps{
                 script{
                     def stsCheck = sh(script: 'aws sts get-caller-identity > /dev/null', returnStatus: true)
@@ -49,11 +49,26 @@ pipeline {
             }
         }
 
-        stage('TERRAFORM INIT & APPLY') {
+        stage('Terraform init & apply') {
             steps {
                 script {
-                    echo "Initializing terraform..."
-                    sh 'terraform init'
+
+                    if(fileExists(".terraform")){
+                        echo "Detected existing terraform resources. Verifying is reinitialization is needed..."
+                        def initStatus = sh(script: "terraform init  -backend=false", returnStatus: true)
+
+                        if(initStatus != 0){
+                            echo "Terraform initialization required due to changes in the configuration. Running 'terraform init'..."
+                            sh 'terraform init'
+                        }
+                        else{
+                            echo "Terraform is already initialized and up-to-date."
+                        }
+                    }
+                    else{
+                        echo "No terraform resources detected. Running 'terraform init'..."
+                        sh "terraform init"
+                    }
 
                     echo "Applying terraform..."
                     sh 'terraform apply --auto-approve'

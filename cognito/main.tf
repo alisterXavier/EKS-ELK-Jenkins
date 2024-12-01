@@ -1,7 +1,7 @@
 resource "aws_cognito_user_pool" "user-pool" {
   name = "opensearch_typewriter_thunder_user_pool"
   admin_create_user_config {
-    allow_admin_create_user_only = false
+    allow_admin_create_user_only = true
   }
   username_configuration {
     case_sensitive = true
@@ -16,14 +16,13 @@ resource "aws_cognito_user_pool_client" "pool" {
   user_pool_id                         = aws_cognito_user_pool.user-pool.id
   generate_secret                      = true
   callback_urls                        = ["https://google.com"]
-  allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code"]
-  allowed_oauth_scopes                 = ["aws.cognito.signin.user.admin"]
+  allowed_oauth_scopes                 = ["openid"]
   supported_identity_providers         = ["COGNITO"]
   explicit_auth_flows = [
-    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_SRP_AUTH",
     "ALLOW_CUSTOM_AUTH",
-    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_ADMIN_USER_PASSWORD_AUTH"
   ]
 }
@@ -42,7 +41,7 @@ resource "aws_cognito_identity_pool" "identity_pool" {
   allow_unauthenticated_identities = false
   cognito_identity_providers {
     client_id               = aws_cognito_user_pool_client.pool.id
-    provider_name           = aws_cognito_user_pool.user-pool.endpoint
+    provider_name           = "cognito-idp.${data.aws_region.current.name}.amazonaws.com/${aws_cognito_user_pool.user-pool.id}"
     server_side_token_check = false
   }
 }

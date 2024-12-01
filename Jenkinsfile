@@ -9,6 +9,7 @@ pipeline {
     }
 
     stages {
+
         stage('AWS SETUP'){
             steps{
                 script{
@@ -31,7 +32,7 @@ pipeline {
             }
         }
 
-        stage('Approval') {
+        stage('Approval for Terraform') {
             steps {
                 script {
                     input message: 'Proceed with the Terraform init?'
@@ -51,7 +52,7 @@ pipeline {
             }
         }
 
-        stage('Approval') {
+        stage('Approval for EKS') {
             steps {
                 script {
                     input message: 'Proceed with the EKS Setup?'

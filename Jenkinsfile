@@ -42,7 +42,8 @@ pipeline {
         stage ('Terraform state check'){
             steps{
                 script{
-                    def tfState = sh(script: """terraform state pull | sed 's/[\\x00-\\x1F]//g'""", returnStdout: true).trim()
+                    def tfState = sh(script: 'terraform state pull > /dev/null', returnStdout: true).trim()
+                    tfState = sh(script: """echo '${tfState}' | sed ':a;N;\$!ba;s/\\\\n/ /g'""", returnStdout: true).trim()
 
                     def arn = sh(script: "echo '${tfState}' | jq -r '.resources[0].instances[0].attributes.arn'", returnStdout: true).trim()
 

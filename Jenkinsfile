@@ -37,7 +37,7 @@ pipeline {
                 script {
                     sh 'terraform init'
                     sh 'terraform apply --auto-approve'
-                    PUBLIC_SUBNETS = sh(script: 'terraform output -raw Public_Subnets', returnStdout: true).trim()
+                    PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
                     VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()
                 }
             }

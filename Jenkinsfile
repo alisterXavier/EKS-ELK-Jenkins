@@ -46,7 +46,7 @@ pipeline {
                     def arn = sh(script: "echo '${tfState}' | jq -r '.resources[0].instances[0].attributes.arn'", returnStdout: true).trim()
                     def stateAccountId = arn.split(':')[4]
 
-                    if(stateAccountId != env.AWS_ACC_ID"){
+                    if(stateAccountId != env.AWS_ACC_ID){
                         echo "DELETING PREVIOUS STATE"
                         sh 'rm -rf terraform.tfstate'
                     }

@@ -157,7 +157,7 @@ pipeline {
                     --set serviceAccount.create=false \
                     --set region=us-east-1 \
                     --set vpcId="$VPC_ID" \
-                    --set serviceAccount.name=aws-load-balancer-controller"
+                    --set serviceAccount.name="aws-load-balancer-controller""
 
                 echo 'Installing auto scaler controller...'
                 sh "helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler \

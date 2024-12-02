@@ -76,7 +76,7 @@ pipeline {
                 script {
 
                     if(fileExists(".terraform")){
-                        echo "Detected existing terraform resources. Verifying is reinitialization is needed..."
+                        echo "Detected existing terraform resources. Verifying if reinitialization is needed..."
                         def initStatus = sh(script: "terraform init  -backend=false > /dev/null", returnStatus: true)
 
                         if(initStatus != 0){

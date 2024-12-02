@@ -118,6 +118,7 @@ pipeline {
 
                     echo "Storing efs handle..."
                     EFS_ID = sh(script: 'terraform output -raw efs_id', returnStdout: true).trim()  
+                    echo "EFS_ID is: ${EFS_ID}"
                 }
             }
         }

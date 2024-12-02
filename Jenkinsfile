@@ -117,9 +117,10 @@ pipeline {
                     VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
 
                     echo "Storing efs handle..."
-                    EFS_ID = sh(script: 'terraform output -json efs_id', returnStdout: true).trim()  
-
-                    sh "envsubst < k8s/pv.yaml > k8s/pv-substituted.yaml"
+                    EFS_ID = sh(script: 'terraform output -raw efs_id', returnStdout: true).trim()  
+                    
+                    sh 'echo $EFS_ID'
+                    sh 'envsubst < k8s/pv.yaml > k8s/pv-substituted.yaml'
                     sh "cat k8s/pv-substituted.yaml"
 
                 }

@@ -10,6 +10,26 @@ pipeline {
 
     stages {
 
+        // stage('Verifying packages'){
+        //     steps{
+        //         echo "Verifying is packages are installed..."
+        //         aws-cli, gettext, helm, kubectl, terraform, jq
+
+        //         script{
+        //             def tools = ['aws', 'gettext', 'helm', 'kubectl', 'terraform', 'jq']
+        //             tools.each { tool ->
+        //                 def command = "which ${tool}".execute()
+        //                 def output = 
+        //                 if (command -v $tool &> /dev/null)
+        //                     echo "$tool: installed"
+        //                 } else{
+        //                     echo "$tool: not installed"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
         stage('Aws setup'){
             steps{
                 script{
@@ -55,7 +75,7 @@ pipeline {
 
                     if(fileExists(".terraform")){
                         echo "Detected existing terraform resources. Verifying is reinitialization is needed..."
-                        def initStatus = sh(script: "terraform init  -backend=false", returnStatus: true)
+                        def initStatus = sh(script: "terraform init  -backend=false > /dev/null", returnStatus: true)
 
                         if(initStatus != 0){
                             echo "Terraform initialization required due to changes in the configuration. Running 'terraform init'..."
@@ -70,7 +90,7 @@ pipeline {
                         sh "terraform init"
                     }
 
-                    def planStatus = sh(script: 'terraform plan -detailed-exitcode', returnStatus: true)
+                    def planStatus = sh(script: 'terraform plan -detailed-exitcode > /dev/null', returnStatus: true)
                     if(planStatus == 2){
                         echo "Detected new terraform resources. Running 'terraform apply'..."
                         sh 'terraform apply --auto-approve'
@@ -128,7 +148,7 @@ pipeline {
                 sh 'kubectl apply -f k8s/services.yaml'
 
                 echo 'Creating ingress...'
-                sh 'envsubst < ingress.yaml | kubectl apply -f -'
+                sh 'envsubst < k8s/ingress.yaml | kubectl apply -f -'
 
                 echo 'Installing load balancer controller...'
                 sh """
@@ -137,7 +157,7 @@ pipeline {
                     --set serviceAccount.create=false \
                     --set region=us-east-1 \
                     --set vpcId="$VPC_ID" \
-                    --set serviceAccount.name """
+                    --set serviceAccount.name=aws-load-balancer-controller"
 
                 echo 'Installing auto scaler controller...'
                 sh "helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler \

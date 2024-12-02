@@ -117,11 +117,10 @@ pipeline {
                     VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
 
                     echo "Storing efs handle..."
-                    def EFS_HANDLER = sh(script: 'terraform output -raw efs_id', returnStdout: true).trim()
-                    
-                    echo "$EFS_HANDLER"
-                    sh 'envsubst < k8s/pv.yaml > k8s/pv-substituted.yaml'
-                    sh "cat k8s/pv-substituted.yaml"
+                    EFS_HANDLER = sh(script: 'terraform output -raw efs_id', returnStdout: true).trim() 
+
+                    sh"sed "s|\${EFS_HANDLER}|$EFS_HANDLER|g" k8s/pv.yaml"
+                    sh "cat k8s/pv.yaml"
 
                 }
             }
@@ -148,9 +147,10 @@ pipeline {
         
         // stage('Eks setup') {
         //     steps {
+
         //         echo 'Updating local kubeconfig...'
         //         sh 'aws eks update-kubeconfig --name=thunder'
-
+                
         //         echo 'Creating service accounts...'
         //         sh 'envsubst < k8s/service-account.yaml | kubectl apply -f -'
 
@@ -166,9 +166,10 @@ pipeline {
         //         echo 'Creating ingress...'
         //         sh 'envsubst < k8s/ingress.yaml | kubectl apply -f -'
 
+
         //         echo "Creating pv and pvc..."
         //         sh "envsubst < k8s/pv.yaml | kubectl apply -f -"
-
+                
         //         echo "Installing ebs driver..."
         //         sh "helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system"
 

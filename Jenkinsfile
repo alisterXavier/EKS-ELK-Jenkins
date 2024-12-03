@@ -185,18 +185,7 @@ pipeline {
                     --set alertmanager.persistentVolume.storageClass="gp2" \
                     --set server.persistentVolume.storageClass="gp2"
                 """
-
-                echo 'Installing load balancer controller...'
-                sh """
-                    helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-                    --set clusterName=thunder \
-                    --set serviceAccount.create=false \
-                    --set region=us-east-1 \
-                    --set vpcId="${VPC_ID}" \
-                    --set serviceAccount.name="aws-load-balancer-controller" \
-                    -n kube-system
-                """
-
+                
                 echo 'Installing auto scaler controller...'
                 sh """
                     helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler \
@@ -205,6 +194,18 @@ pipeline {
                     --set rbac.serviceAccount.create=false \
                     --set awsRegion=us-east-1 -n kube-system
                 """
+
+                echo 'Installing load balancer controller...'
+                sh """
+                    helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+                    --set clusterName=thunder \
+                    --set serviceAccount.create=false \
+                    --set region=us-east-1 \
+                    --set vpcId="vpc-0d43997db3669626a" \
+                    --set serviceAccount.name="aws-load-balancer-controller" \
+                    -n kube-system
+                """
+
                 }
             }
         }

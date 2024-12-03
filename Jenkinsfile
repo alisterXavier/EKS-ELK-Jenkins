@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws_access_key')
         AWS_SECRET_ACCESS_KEY = credentials('aws_secret_key')
-        AWS_DEFAULT_REGION = "us-east-1"
+        AWS_DEFAULT_REGION = 'us-east-1'
         AWS_ACC_ID = credentials('aws_acc_id')
         NEW_RELIC_API_KEY = credentials('new_relic_api_key')
         NEW_RELIC_ACC_ID = credentials('new_relic_acc_id')

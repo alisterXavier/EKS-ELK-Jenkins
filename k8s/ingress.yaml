@@ -5,7 +5,7 @@ metadata:
   namespace: thunder
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/subnets:   "${PUBLIC_SUBNETS}"
+    alb.ingress.kubernetes.io/subnets: <PUBLIC_SUBNETS>
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP" : 80}]'
     alb.ingress.kubernetes.io/healthcheck-path: "/check"
     alb.ingress.kubernetes.io/healthcheck-port: "80"

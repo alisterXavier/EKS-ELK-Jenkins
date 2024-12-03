@@ -192,8 +192,9 @@ pipeline {
                     --set clusterName=thunder \
                     --set serviceAccount.create=false \
                     --set region=us-east-1 \
-                    --set vpcId="${env.VPC_ID}" \
-                    --set serviceAccount.name="aws-load-balancer-controller"
+                    --set vpcId="${VPC_ID}" \
+                    --set serviceAccount.name="aws-load-balancer-controller \
+                    -n kube-system"
                 """
 
                 echo 'Installing auto scaler controller...'

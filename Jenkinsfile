@@ -54,19 +54,25 @@ pipeline {
             }
         }
 
-        stage ('Terraform state check'){
+        stage ('Terraform state account check'){
             steps{
                 script{
                     echo "Retrieving current state..."
                     sh 'terraform state pull > tfstate.json'
-                    sh "cat tfstate.json"
+                    
                     def arn = sh(script: "jq -r '.resources[0].instances[0].attributes.arn' tfstate.json", returnStdout: true).trim()
 
-                    def stateAccountId = arn.split(':')[4]
+                    if (arn) {
+                        def stateAccountId = arn.split(':')[4]
 
-                    if(stateAccountId != env.AWS_ACC_ID){
-                        echo "Deleting preivous state..."
-                        sh 'rm -rf terraform.tfstate'
+                        if (stateAccountId != env.AWS_ACC_ID) {
+                            echo "State account ID does not match. Deleting previous state..."
+                            sh 'rm -rf terraform.tfstate'
+                        } else {
+                            echo "State account ID matches. Proceeding..."
+                        }
+                    } else {
+                        echo "No resources found in state. Skipping further checks."
                     }
                 }
             }

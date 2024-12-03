@@ -149,7 +149,6 @@ pipeline {
         
         stage('Eks setup') {
             steps {
-
                 echo 'Updating local kubeconfig...'
                 sh 'aws eks update-kubeconfig --name=thunder'
                 
@@ -166,7 +165,7 @@ pipeline {
                 sh 'kubectl apply -f k8s/services.yaml'
 
                 echo 'Creating ingress...'
-                def publicSubnetsString = PUBLIC_SUBNETS.join(",")
+                publicSubnetsString = PUBLIC_SUBNETS.join(",")
                 sh "sed 's|<PUBLIC_SUBNETS>|${publicSubnetsString}|g' k8s/ingress.yaml | kubectl apply -f -"
 
                 echo "Creating pv and pvc..."

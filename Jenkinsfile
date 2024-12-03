@@ -81,7 +81,6 @@ pipeline {
         stage('Terraform init & apply') {
             steps {
                 script {
-
                     if(fileExists(".terraform")){
                         echo "Detected existing terraform resources. Verifying if reinitialization is needed..."
                         def initStatus = sh(script: "terraform init  -backend=false > /dev/null", returnStatus: true)
@@ -126,7 +125,7 @@ pipeline {
                     echo "Storing efs handle..."
                     EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
 
-                    sh 'sed "s|\\${EFS_HANDLER}|${env.EFS_HANDLER}|g" pv.yaml'
+                    sh 'sed "s|\\${EFS_HANDLER}|${EFS_HANDLER}|g" pv.yaml'
 
                 }
             }

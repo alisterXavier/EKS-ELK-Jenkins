@@ -194,7 +194,7 @@ pipeline {
                     --set region=us-east-1 \
                     --set vpcId="${VPC_ID}" \
                     --set serviceAccount.name="aws-load-balancer-controller" \
-                    -n kube-system"
+                    -n kube-system
                 """
 
                 echo 'Installing auto scaler controller...'

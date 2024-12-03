@@ -117,7 +117,7 @@ pipeline {
                     VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
 
                     echo "Storing efs handle..."
-                    EFS_HANDLER = sh(script: 'terraform output -raw efs_id', returnStdout: true).trim() 
+                    EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
 
                     sh 'sed "s|\\${EFS_HANDLER}|${env.EFS_HANDLER}|g" pv.yaml'
 

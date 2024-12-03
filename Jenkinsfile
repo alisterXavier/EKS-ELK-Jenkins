@@ -131,7 +131,7 @@ pipeline {
                         def updatedContent = content.replace(placeholder, replacement)
                         file.text = updatedContent
                     }
-                    replaceText('pv.yaml', '${EFS_HANDLER}', EFS_HANDLER)
+                    replaceText('pv.yaml', '${EFS_HANDLER}', "$EFS_HANDLER")
 
                 }
             }

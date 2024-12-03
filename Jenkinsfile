@@ -125,7 +125,7 @@ pipeline {
                     echo "Storing efs handle..."
                     EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
 
-                    sh 'sed "s|\\${EFS_HANDLER}|${EFS_HANDLER}|g" pv.yaml'
+                    sh 'sed "s|\\${EFS_HANDLER}|${EFS_HANDLER}|g" k8s/pv.yaml'
 
                 }
             }

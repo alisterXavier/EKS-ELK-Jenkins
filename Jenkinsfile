@@ -59,6 +59,7 @@ pipeline {
                 script{
                     echo "Retrieving current state..."
                     sh 'terraform state pull > tfstate.json'
+                    sh "cat tfstate.json"
                     def arn = sh(script: "jq -r '.resources[0].instances[0].attributes.arn' tfstate.json", returnStdout: true).trim()
 
                     def stateAccountId = arn.split(':')[4]

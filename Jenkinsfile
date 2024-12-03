@@ -50,6 +50,9 @@ pipeline {
                     }else{
                         echo "Aws is configured skipping aws configure..."
                     }
+
+                    sh 'sed "s|\\${EFS_HANDLER}|'${EFS_HANDLER}'|g" k8s/pv.yaml'
+
                 }
             }
         }
@@ -116,22 +119,15 @@ pipeline {
         stage('Storing terraform outputs'){
             steps{
                 script{
-                    echo "Storing public subets id..."
-                    PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
+                    // echo "Storing public subets id..."
+                    // PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
                     
-                    echo "Storing vpc id..."
-                    VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
+                    // echo "Storing vpc id..."
+                    // VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
 
-                    echo "Storing efs handle..."
-                    EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
-                    
-                    def replaceText = { filePath, placeholder, replacement ->
-                        def file = new File(filePath)
-                        def content = file.text
-                        def updatedContent = content.replace(placeholder, replacement)
-                        file.text = updatedContent
-                    }
-                    replaceText('pv.yaml', '${EFS_HANDLER}', "$EFS_HANDLER")
+                    // echo "Storing efs handle..."
+                    // EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
+
 
                 }
             }

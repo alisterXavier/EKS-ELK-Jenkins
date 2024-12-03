@@ -166,7 +166,8 @@ pipeline {
                 sh 'kubectl apply -f k8s/services.yaml'
 
                 echo 'Creating ingress...'
-                sh "sed 's|<PUBLIC_SUBNETS>|${PUBLIC_SUBNETS}|g' k8s/ingress.yaml | kubectl apply -f -"
+                def publicSubnetsString = PUBLIC_SUBNETS.join(",")
+                sh "sed 's|<PUBLIC_SUBNETS>|${publicSubnetsString}|g' k8s/ingress.yaml | kubectl apply -f -"
 
                 echo "Creating pv and pvc..."
                 sh "sed 's|<EFS_HANDLER>|${EFS_HANDLER}|g' k8s/pv.yaml | kubectl apply -f -"

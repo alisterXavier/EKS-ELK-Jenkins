@@ -119,8 +119,7 @@ pipeline {
                     echo "Storing efs handle..."
                     EFS_HANDLER = sh(script: 'terraform output -raw efs_id', returnStdout: true).trim() 
 
-                    sh "sed \"s|\\\${EFS_HANDLER}|$EFS_HANDLER|g\" k8s/pv.yaml"
-                    sh "cat k8s/pv.yaml"
+                    sh 'sed "s|\\${EFS_HANDLER}|${env.EFS_HANDLER}|g" pv.yaml'
 
                 }
             }
@@ -152,7 +151,7 @@ pipeline {
         //         sh 'aws eks update-kubeconfig --name=thunder'
                 
         //         echo 'Creating service accounts...'
-        //         sh 'envsubst < k8s/service-account.yaml | kubectl apply -f -'
+        //         sh 'sed "s|\\${AWS_ACC_ID}|${env.AWS_ACC_ID}|g" k8s/service-account.yaml | kubectl apply -f -'
 
         //         echo 'Creating namespace...'
         //         sh 'kubectl apply -f k8s/namespace.yaml'
@@ -190,7 +189,7 @@ pipeline {
         //             --set clusterName=thunder \
         //             --set serviceAccount.create=false \
         //             --set region=us-east-1 \
-        //             --set vpcId="$VPC_ID" \
+        //             --set vpcId="${env.VPC_ID}" \
         //             --set serviceAccount.name="aws-load-balancer-controller"
         //         """
 

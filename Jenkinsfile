@@ -51,87 +51,85 @@ pipeline {
                         echo "Aws is configured skipping aws configure..."
                     }
 
-                    sh 'sed "s|\\${EFS_HANDLER}|${EFS_HANDLER}|g" k8s/pv.yaml'
+                    sh 'sed "s|\\${EFS_HANDLER}|'${EFS_HANDLER}'|g" k8s/pv.yaml'
 
                 }
             }
         }
 
-        stage ('Terraform state account check'){
-            steps{
-                script{
-                    echo "Retrieving current state..."
-                    sh 'terraform state pull > tfstate.json'
+        // stage ('Terraform state account check'){
+        //     steps{
+        //         script{
+        //             echo "Retrieving current state..."
+        //             sh 'terraform state pull > tfstate.json'
                     
-                    def arn = sh(script: "jq -r '.resources[0].instances[0].attributes.arn' tfstate.json", returnStdout: true).trim()
+        //             def arn = sh(script: "jq -r '.resources[0].instances[0].attributes.arn' tfstate.json", returnStdout: true).trim()
 
-                    if (arn) {
-                        def stateAccountId = arn.split(':')[4]
+        //             if (arn) {
+        //                 def stateAccountId = arn.split(':')[4]
 
-                        if (stateAccountId != env.AWS_ACC_ID) {
-                            echo "State account ID does not match. Deleting previous state..."
-                            sh 'rm -rf terraform.tfstate'
-                        } else {
-                            echo "State account ID matches. Proceeding..."
-                        }
-                    } else {
-                        echo "No resources found in state. Skipping further checks."
-                    }
-                }
-            }
-        }
+        //                 if (stateAccountId != env.AWS_ACC_ID) {
+        //                     echo "State account ID does not match. Deleting previous state..."
+        //                     sh 'rm -rf terraform.tfstate'
+        //                 } else {
+        //                     echo "State account ID matches. Proceeding..."
+        //                 }
+        //             } else {
+        //                 echo "No resources found in state. Skipping further checks."
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Terraform init & apply') {
-            steps {
-                script {
-                    if(fileExists(".terraform")){
-                        echo "Detected existing terraform resources. Verifying if reinitialization is needed..."
-                        def initStatus = sh(script: "terraform init  -backend=false > /dev/null", returnStatus: true)
+        // stage('Terraform init & apply') {
+        //     steps {
+        //         script {
+        //             if(fileExists(".terraform")){
+        //                 echo "Detected existing terraform resources. Verifying if reinitialization is needed..."
+        //                 def initStatus = sh(script: "terraform init  -backend=false > /dev/null", returnStatus: true)
 
-                        if(initStatus != 0){
-                            echo "Terraform initialization required due to changes in the configuration. Running 'terraform init'..."
-                            sh 'terraform init'
-                        }
-                        else{
-                            echo "Terraform is already initialized and up-to-date."
-                        }
-                    }
-                    else{
-                        echo "No terraform resources detected. Running 'terraform init'..."
-                        sh "terraform init"
-                    }
+        //                 if(initStatus != 0){
+        //                     echo "Terraform initialization required due to changes in the configuration. Running 'terraform init'..."
+        //                     sh 'terraform init'
+        //                 }
+        //                 else{
+        //                     echo "Terraform is already initialized and up-to-date."
+        //                 }
+        //             }
+        //             else{
+        //                 echo "No terraform resources detected. Running 'terraform init'..."
+        //                 sh "terraform init"
+        //             }
 
-                    def planStatus = sh(script: 'terraform plan -detailed-exitcode > /dev/null', returnStatus: true)
-                    if(planStatus == 2){
-                        echo "Detected new terraform resources. Running 'terraform apply'..."
-                        sh 'terraform apply --auto-approve'
-                    }else if(planStatus == 1){
-                        echo "Error running terraform plan. Exiting..."
-                        error("Terraform plan failed")
-                    }
-                    else{
-                        echo "Terraform resources are up-to-date. Skipping 'terraform apply'..."
-                    }
-                }
-            }
-        }
+        //             def planStatus = sh(script: 'terraform plan -detailed-exitcode > /dev/null', returnStatus: true)
+        //             if(planStatus == 2){
+        //                 echo "Detected new terraform resources. Running 'terraform apply'..."
+        //                 sh 'terraform apply --auto-approve'
+        //             }else if(planStatus == 1){
+        //                 echo "Error running terraform plan. Exiting..."
+        //                 error("Terraform plan failed")
+        //             }
+        //             else{
+        //                 echo "Terraform resources are up-to-date. Skipping 'terraform apply'..."
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Storing terraform outputs'){
-            steps{
-                script{
-                    // echo "Storing public subets id..."
-                    // PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
+        // stage('Storing terraform outputs'){
+        //     steps{
+        //         script{
+        //             echo "Storing public subets id..."
+        //             PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
                     
-                    // echo "Storing vpc id..."
-                    // VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
+        //             echo "Storing vpc id..."
+        //             VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
 
-                    // echo "Storing efs handle..."
-                    // EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
-
-
-                }
-            }
-        }
+        //             echo "Storing efs handle..."
+        //             EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
+        //         }
+        //     }
+        // }
 
         // stage("Adding helm repos"){
         //     steps{

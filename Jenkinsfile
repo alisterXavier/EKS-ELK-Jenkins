@@ -149,7 +149,8 @@ pipeline {
         
         stage('Eks setup') {
             steps {
-                echo 'Updating local kubeconfig...'
+                script{
+                    echo 'Updating local kubeconfig...'
                 sh 'aws eks update-kubeconfig --name=thunder'
                 
                 echo 'Creating service accounts...'
@@ -203,6 +204,7 @@ pipeline {
                     --set rbac.serviceAccount.create=false \
                     --set awsRegion=us-east-1 -n kube-system
                 """
+                }
             }
         }
 

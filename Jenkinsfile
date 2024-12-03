@@ -124,8 +124,13 @@ pipeline {
 
                     echo "Storing efs handle..."
                     EFS_HANDLER = sh(script: "terraform output -raw efs_id", returnStdout: true).trim() 
-
-                    sh 'sed "s|\\${EFS_HANDLER}|${EFS_HANDLER}|g" k8s/pv.yaml'
+                    def replaceText(filePath, placeholder, replacement) {
+                        def file = new File(filePath)
+                        def content = file.text
+                        def updatedContent = content.replace(placeholder, replacement)
+                        file.text = updatedContent
+                    }
+                    replaceText('pv.yaml', '${EFS_HANDLER}', "$EFS_HANDLER")
 
                 }
             }

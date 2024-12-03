@@ -50,7 +50,7 @@ pipeline {
                     }else{
                         echo "Aws is configured skipping aws configure..."
                     }
-
+                    EFS_HANDLER = "fs-sfdsfds"
                     sh 'sed "s|\\${EFS_HANDLER}|${EFS_HANDLER}|g" k8s/pv.yaml'
 
                 }

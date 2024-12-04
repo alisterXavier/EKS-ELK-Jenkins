@@ -167,6 +167,7 @@ pipeline {
 
                 echo 'Creating ingress...'
                 publicSubnetsString = PUBLIC_SUBNETS.join(",")
+                echo "$publicSubnetsString"
                 sh "sed 's|<PUBLIC_SUBNETS>|${publicSubnetsString}|g' k8s/ingress.yaml | kubectl apply -f -"
 
                 echo "Creating pv and pvc..."
@@ -227,9 +228,6 @@ pipeline {
                     --set newrelic-prometheus-agent.config.kubernetes.integrations_filter.enabled=false \
                     --set k8s-agents-operator.enabled=true --set logging.enabled=true --set newrelic-logging.lowDataMode=true
                     """
-
-                echo "Applying new relic..."
-                sh "kubectl apply -f k8s/instrumentation.yaml -n monitoring"
             }
         }
     }

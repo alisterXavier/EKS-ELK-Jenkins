@@ -7,6 +7,7 @@ pipeline {
         AWS_DEFAULT_REGION = 'us-east-1'
         AWS_ACC_ID = credentials('aws_acc_id')
         LICENCE_KEY = credentials('licence_key')
+        KSM_IMAGE_VERSION="v2.10.0" 
     }
 
     stages {
@@ -214,7 +215,6 @@ pipeline {
 
                 echo "Setting up new relic..."
                 sh """
-                    KSM_IMAGE_VERSION="v2.10.0" && \
                     helm repo add newrelic https://helm-charts.newrelic.com && \
                     helm repo update ; \
                     helm upgrade --install newrelic-bundle newrelic/nri-bundle \

@@ -167,7 +167,12 @@ pipeline {
 
                 echo 'Creating ingress...'
                 publicSubnetsString = PUBLIC_SUBNETS.join(",")
+
+                echo "HIIIIIIIIII"
                 echo "$publicSubnetsString"
+                echo "publicSubnetsString"
+                echo "HIIIIIIIIII"
+
                 sh "sed 's|<PUBLIC_SUBNETS>|${publicSubnetsString}|g' k8s/ingress.yaml | kubectl apply -f -"
 
                 echo "Creating pv and pvc..."

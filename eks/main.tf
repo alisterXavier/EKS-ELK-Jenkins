@@ -8,19 +8,19 @@ resource "aws_eks_cluster" "eks_cluster" {
   }
 }
 
-resource "aws_eks_fargate_profile" "fargate_profile" {
-  cluster_name           = aws_eks_cluster.eks_cluster.name
-  fargate_profile_name   = "thunder"
-  pod_execution_role_arn = var.pod_execution_role_arn
-  subnet_ids             = var.private_subnet_ids
-  selector {
-    namespace = "thunder"
-  }
+# resource "aws_eks_fargate_profile" "fargate_profile" {
+#   cluster_name           = aws_eks_cluster.eks_cluster.name
+#   fargate_profile_name   = "thunder"
+#   pod_execution_role_arn = var.pod_execution_role_arn
+#   subnet_ids             = var.private_subnet_ids
+#   selector {
+#     namespace = "thunder"
+#   }
 
-  tags = {
-    Name = "Thunder"
-  }
-}
+#   tags = {
+#     Name = "Thunder"
+#   }
+# }
 
 resource "aws_eks_node_group" "eks_node_group" {
   node_group_name = "thunder"

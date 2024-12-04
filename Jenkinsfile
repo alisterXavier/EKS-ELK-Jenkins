@@ -6,8 +6,7 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('aws_secret_key')
         AWS_DEFAULT_REGION = 'us-east-1'
         AWS_ACC_ID = credentials('aws_acc_id')
-        NEW_RELIC_API_KEY = credentials('new_relic_api_key')
-        NEW_RELIC_ACC_ID = credentials('new_relic_acc_id')
+        LICENCE_KEY = credentials('licence_key')
     }
 
     stages {
@@ -215,23 +214,19 @@ pipeline {
 
                 echo "Setting up new relic..."
                 sh """
-                    curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh |
-                    bash && NEW_RELIC_CLI_SKIP_CORE=1 \
-                    NR_CLI_CLUSTERNAME=thunder \
-                    NR_CLI_NAMESPACE=monitoring \
-                    NR_CLI_LOW_DATA_MODE=true \
-                    NR_CLI_KSM=true \
-                    NR_CLI_KUBE_EVENTS=true \
-                    NR_CLI_GKE_AUTOPILOT=false \
-                    NR_CLI_PRIVILEGED=true \
-                    NR_CLI_PROMETHEUS_AGENT=true \
-                    NR_CLI_PROMETHEUS_AGENT_LOW_DATA_MODE=true \
-                    NR_CLI_CURATED=false NR_CLI_AGENT_OPERATOR=true \
-                    NR_CLI_LOGGING=true \
-                    NR_CLI_LOGGING_LOW_DATA_MODE=true \
-                    NEW_RELIC_API_KEY=$NEW_RELIC_API_KEY \
-                    NEW_RELIC_ACCOUNT_ID=$NEW_RELIC_ACC_ID \
-                    NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -n kubernetes-open-source-integration"""
+                    KSM_IMAGE_VERSION="v2.10.0" && \
+                    helm repo add newrelic https://helm-charts.newrelic.com && \
+                    helm repo update ; \
+                    helm upgrade --install newrelic-bundle newrelic/nri-bundle \
+                    --set global.licenseKey=${LICENCE_KEY} \
+                    --set global.cluster=thunder --namespace=monitoring \
+                    --set newrelic-infrastructure.privileged=true \
+                    --set global.lowDataMode=true --set kube-state-metrics.image.tag=${KSM_IMAGE_VERSION} \
+                    --set kube-state-metrics.enabled=true --set kubeEvents.enabled=true \
+                    --set newrelic-prometheus-agent.enabled=true --set newrelic-prometheus-agent.lowDataMode=true \
+                    --set newrelic-prometheus-agent.config.kubernetes.integrations_filter.enabled=false \
+                    --set k8s-agents-operator.enabled=true --set logging.enabled=true --set newrelic-logging.lowDataMode=true
+                    """
 
                 echo "Applying new relic..."
                 sh "kubectl apply -f k8s/instrumentation.yaml -n monitoring"

@@ -118,7 +118,7 @@ pipeline {
                 script{
                     echo "Storing public subets id..."
                     PUBLIC_SUBNETS_JSON = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
-                    def PUBLIC_SUBNETS = new groovy.json.JsonSlurper().parseText(PUBLIC_SUBNETS_JSON)
+                    PUBLIC_SUBNETS = new groovy.json.JsonSlurper().parseText(PUBLIC_SUBNETS_JSON)
                     PUBLIC_SUBNETS = PUBLIC_SUBNETS.join("','")
 
                     echo "Storing vpc id..."

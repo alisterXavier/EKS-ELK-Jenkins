@@ -153,60 +153,59 @@ pipeline {
             steps {
                 script{
                     echo 'Updating local kubeconfig...'
-                sh 'aws eks update-kubeconfig --name=thunder'
-                
-                echo 'Creating service accounts...'
-                sh "sed 's|<ACC_ID>|${AWS_ACC_ID}|g' k8s/service-account.yaml | kubectl apply -f -"
+                    sh 'aws eks update-kubeconfig --name=thunder'
+                    
+                    echo 'Creating service accounts...'
+                    sh "sed 's|<ACC_ID>|${AWS_ACC_ID}|g' k8s/service-account.yaml | kubectl apply -f -"
 
-                echo 'Creating namespace...'
-                sh 'kubectl apply -f k8s/namespace.yaml'
+                    echo 'Creating namespace...'
+                    sh 'kubectl apply -f k8s/namespace.yaml'
 
-                echo 'Creating deployments...'
-                sh 'kubectl apply -f k8s/deployments.yaml'
+                    echo 'Creating deployments...'
+                    sh 'kubectl apply -f k8s/deployments.yaml'
 
-                echo 'Creating services...'
-                sh 'kubectl apply -f k8s/services.yaml'
+                    echo 'Creating services...'
+                    sh 'kubectl apply -f k8s/services.yaml'
 
-                echo 'Creating ingress...'
-                sh "sed 's|<PUBLIC_SUBNETS>|${PUBLIC_SUBNETS}|g' k8s/ingress.yaml | kubectl apply -f -"
+                    echo "Creating pv and pvc..."
+                    sh "sed 's|<EFS_HANDLER>|${EFS_HANDLER}|g' k8s/pv.yaml | kubectl apply -f -"
+                    
+                    echo "Installing ebs driver..."
+                    sh "helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system"
 
-                echo "Creating pv and pvc..."
-                sh "sed 's|<EFS_HANDLER>|${EFS_HANDLER}|g' k8s/pv.yaml | kubectl apply -f -"
-                
-                echo "Installing ebs driver..."
-                sh "helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system"
+                    echo 'Creating metric server...'
+                    sh "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+                    
+                    echo "Installing prometheus server..."
+                    sh """
+                        helm install prometheus prometheus-community/prometheus \
+                        --namespace monitoring \
+                        --set alertmanager.persistentVolume.storageClass="gp2" \
+                        --set server.persistentVolume.storageClass="gp2"
+                    """
+                    
+                    echo 'Installing auto scaler controller...'
+                    sh """
+                        helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler \
+                        --set autoDiscovery.clusterName=thunder \
+                        --set rbac.serviceAccount.name=cluster-autoscaler-controller \
+                        --set rbac.serviceAccount.create=false \
+                        --set awsRegion=us-east-1 -n kube-system
+                    """
 
-                echo 'Creating metric server...'
-                sh "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
-                
-                echo "Installing prometheus server..."
-                sh """
-                    helm install prometheus prometheus-community/prometheus \
-                    --namespace monitoring \
-                    --set alertmanager.persistentVolume.storageClass="gp2" \
-                    --set server.persistentVolume.storageClass="gp2"
-                """
-                
-                echo 'Installing auto scaler controller...'
-                sh """
-                    helm install aws-auto-scaler-controller autoscaler/cluster-autoscaler \
-                    --set autoDiscovery.clusterName=thunder \
-                    --set rbac.serviceAccount.name=cluster-autoscaler-controller \
-                    --set rbac.serviceAccount.create=false \
-                    --set awsRegion=us-east-1 -n kube-system
-                """
-
-                echo 'Installing load balancer controller...'
-                sh """
-                    helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-                    --set clusterName=thunder \
-                    --set serviceAccount.create=false \
-                    --set region=us-east-1 \
-                    --set vpcId="vpc-0d43997db3669626a" \
-                    --set serviceAccount.name="aws-load-balancer-controller" \
-                    -n kube-system
-                """
-
+                    echo 'Installing load balancer controller...'
+                    sh """
+                        helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+                        --set clusterName=thunder \
+                        --set serviceAccount.create=false \
+                        --set region=us-east-1 \
+                        --set vpcId="${VPC_ID}" \
+                        --set serviceAccount.name="aws-load-balancer-controller" \
+                        -n kube-system
+                    """
+                    echo 'Creating ingress...'
+                    sh "sed 's|<PUBLIC_SUBNETS>|${PUBLIC_SUBNETS}|g' k8s/ingress.yaml | kubectl apply -f -"
+                    
                 }
             }
         }

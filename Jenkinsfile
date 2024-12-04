@@ -117,8 +117,10 @@ pipeline {
             steps{
                 script{
                     echo "Storing public subets id..."
-                    PUBLIC_SUBNETS = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
-                    
+                    PUBLIC_SUBNETS_JSON = sh(script: 'terraform output -json Public_Subnets', returnStdout: true).trim()
+                    def PUBLIC_SUBNETS = new groovy.json.JsonSlurper().parseText(PUBLIC_SUBNETS_JSON)
+                    PUBLIC_SUBNETS = PUBLIC_SUBNETS.join("','")
+
                     echo "Storing vpc id..."
                     VPC_ID = sh(script: 'terraform output -raw Vpc_Id', returnStdout: true).trim()  
 
@@ -166,14 +168,7 @@ pipeline {
                 sh 'kubectl apply -f k8s/services.yaml'
 
                 echo 'Creating ingress...'
-                PUBLIC_SUBNETS = PUBLIC_SUBNETS.join(",")
-
-                echo "HIIIIIIIIII"
-                echo "${PUBLIC_SUBNETS}"
-                echo "publicSubnetsString"
-                echo "HIIIIIIIIII"
-
-                sh "sed 's|<PUBLIC_SUBNETS>|${publicSubnetsString}|g' k8s/ingress.yaml | kubectl apply -f -"
+                sh "sed 's|<PUBLIC_SUBNETS>|${PUBLIC_SUBNETS}|g' k8s/ingress.yaml | kubectl apply -f -"
 
                 echo "Creating pv and pvc..."
                 sh "sed 's|<EFS_HANDLER>|${EFS_HANDLER}|g' k8s/pv.yaml | kubectl apply -f -"

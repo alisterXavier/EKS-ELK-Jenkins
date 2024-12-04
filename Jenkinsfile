@@ -166,10 +166,10 @@ pipeline {
                 sh 'kubectl apply -f k8s/services.yaml'
 
                 echo 'Creating ingress...'
-                publicSubnetsString = PUBLIC_SUBNETS.join(",")
+                PUBLIC_SUBNETS = PUBLIC_SUBNETS.join(",")
 
                 echo "HIIIIIIIIII"
-                echo "$publicSubnetsString"
+                echo "${PUBLIC_SUBNETS}"
                 echo "publicSubnetsString"
                 echo "HIIIIIIIIII"
 
